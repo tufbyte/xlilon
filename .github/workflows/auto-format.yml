@@ -1,0 +1,31 @@
+name: Code Fixer (Clang-Format)
+
+on:
+  push:
+    paths:
+      - '**.cpp'
+      - '**.h'
+      - '**.mm'
+
+jobs:
+  format_code:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Give permission to commit changes back
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Clang-Format Style Fixer
+        uses: jidicula/clang-format-action@v4.11.0
+        with:
+          clang-format-version: '17'
+          check-path: 'src'  # Only format the src directory
+          fallback-style: 'Google'
+
+      - name: Commit Changes (If any)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: auto-format C++ code [skip ci]"
+          branch: ${{ github.head_ref }}
