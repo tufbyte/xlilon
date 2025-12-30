@@ -1,0 +1,28 @@
+name: C++ Linter (Clang-Tidy)
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Clang-Tidy
+        run: sudo apt-get install -y clang-tidy libx11-dev
+
+      - name: Prepare Compilation Database
+        # Clang-tidy needs to know how you build your code to check it properly.
+        # We simulate a "compile command" generation here.
+        run: |
+          echo "[" > compile_commands.json
+          echo "  {" >> compile_commands.json
+          echo "    \"directory\": \"$(pwd)\"," >> compile_commands.json
+          echo "    \"command\": \"g++ -std=c++17 -c src/xlilon.cpp\"," >> compile_commands.json
+          echo "    \"file\": \"src/xlilon.cpp\"" >> compile_commands.json
+          echo "  }" >> compile_commands.json
+          echo "]" >> compile_commands.json
+
+      - name: Run Clang-Tidy
+        run: |
+          clang-tidy src/xlilon.cpp -checks='-*,performance-*,bugprone-*' -- -std=c++17 -I src
